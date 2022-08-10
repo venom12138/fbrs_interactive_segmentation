@@ -6,6 +6,7 @@ BERKELEY_PATH: "./datasets/Berkeley"
 DAVIS_PATH: "./datasets/DAVIS"
 SBD_PATH: "./datasets/SBD"
 COCO_MVAL_PATH: "./datasets/COCO_MVal"
+EPIC_KITCHEN_PATH: "./datasets/EPIC-Kitchen/P04"
 
 # You can download the weights for HRNet from the repository:
 # https://github.com/HRNet/HRNet-Image-Classification

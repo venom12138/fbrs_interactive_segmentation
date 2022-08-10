@@ -129,7 +129,7 @@ class InteractiveController:
             results_mask_for_vis[self.current_object_prob > self.prob_thresh] = self.object_count + 1
 
         vis = draw_with_blend_and_clicks(self.image, mask=results_mask_for_vis, alpha=alpha_blend,
-                                         clicks_list=self.clicker.clicks_list, radius=click_radius)
+                                            clicks_list=self.clicker.clicks_list, radius=click_radius)
         if self.probs_history:
             total_mask = self.probs_history[-1][0] > self.prob_thresh
             results_mask_for_vis[np.logical_not(total_mask)] = 0

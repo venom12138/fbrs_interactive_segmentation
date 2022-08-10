@@ -58,7 +58,7 @@ class ISDataset(torch.utils.data.dataset.Dataset):
     def __getitem__(self, index):
         if self.samples_precomputed_scores is not None:
             index = np.random.choice(self.samples_precomputed_scores['indices'],
-                                     p=self.samples_precomputed_scores['probs'])
+                                        p=self.samples_precomputed_scores['probs'])
         else:
             if self.epoch_len > 0:
                 index = random.randrange(0, len(self.dataset_samples))
@@ -76,7 +76,7 @@ class ISDataset(torch.utils.data.dataset.Dataset):
             sample = self.exclude_small_objects(sample)
 
         sample['objects_ids'] = [obj_id for obj_id, obj_info in sample['instances_info'].items()
-                                 if not obj_info['ignore']]
+                                if not obj_info['ignore']]
 
         points, masks = [], []
         self.points_sampler.sample_object(sample)
@@ -104,7 +104,8 @@ class ISDataset(torch.utils.data.dataset.Dataset):
 
     def check_sample_types(self, sample):
         assert sample['image'].dtype == 'uint8'
-        assert sample['instances_mask'].dtype == 'int32'
+        if sample['instances_mask'] is not None:
+            assert sample['instances_mask'].dtype == 'int32' or sample['instances_mask'].dtype == 'uint8'
 
     def rescale_sample(self, sample):
         if self.image_rescale is None:
@@ -119,8 +120,10 @@ class ISDataset(torch.utils.data.dataset.Dataset):
         for mask_name in self._precise_masks:
             if mask_name not in sample:
                 continue
+            if sample[mask_name] is None:
+                continue
             sample[mask_name] = cv2.resize(sample[mask_name], new_size,
-                                           interpolation=cv2.INTER_NEAREST)
+                                            interpolation=cv2.INTER_NEAREST)
 
         return sample
 
@@ -141,39 +144,41 @@ class ISDataset(torch.utils.data.dataset.Dataset):
 
         masks_to_augment = [mask_name for mask_name in self._precise_masks if mask_name in sample]
         masks = [sample[mask_name] for mask_name in masks_to_augment]
-
-        valid_augmentation = False
-        while not valid_augmentation:
-            aug_output = augmentator(image=sample['image'], masks=masks)
-            valid_augmentation = self.check_augmented_sample(sample, aug_output, masks_to_augment)
-
-        sample['image'] = aug_output['image']
-        for mask_name, mask in zip(masks_to_augment, aug_output['masks']):
-            sample[mask_name] = mask
+        if None not in masks:
+            valid_augmentation = False
+            while not valid_augmentation:
+                aug_output = augmentator(image=sample['image'], masks=masks)
+                valid_augmentation = self.check_augmented_sample(sample, aug_output, masks_to_augment)
+            for mask_name, mask in zip(masks_to_augment, aug_output['masks']):
+                sample[mask_name] = mask
 
         sample_ids = set(get_unique_labels(sample['instances_mask'], exclude_zero=True))
         instances_info = sample['instances_info']
-        instances_info = {sample_id: sample_info for sample_id, sample_info in instances_info.items()
-                          if sample_id in sample_ids}
+        if None not in masks:
+            instances_info = {sample_id: sample_info for sample_id, sample_info in instances_info.items()
+                                if sample_id in sample_ids}
         sample['instances_info'] = instances_info
+        sample['image'] = aug_output['image']
 
         return sample
 
     def check_augmented_sample(self, sample, aug_output, masks_to_augment):
         if self.keep_background_prob < 0.0 or random.random() < self.keep_background_prob:
             return True
-
+        if sample['instances_mask'] is None:
+            return True
         aug_instances_mask = aug_output['masks'][masks_to_augment.index('instances_mask')]
         aug_sample_ids = set(get_unique_labels(aug_instances_mask, exclude_zero=True))
         num_objects_after_aug = len([obj_id for obj_id in aug_sample_ids
-                                     if not sample['instances_info'][obj_id]['ignore']])
+                                    if not sample['instances_info'][obj_id]['ignore']])
 
         return num_objects_after_aug > 0
 
     def exclude_small_objects(self, sample):
         if self.min_object_area <= 0:
             return sample
-
+        if sample['instances_mask'] is None:
+            return sample
         for obj_id, obj_info in sample['instances_info'].items():
             if not obj_info['ignore']:
                 obj_area = (sample['instances_mask'] == obj_id).sum()

@@ -53,8 +53,8 @@ def get_predictor(net, brs_mode, device,
         }[brs_mode]
 
         opt_functor = ScaleBiasOptimizer(prob_thresh=prob_thresh,
-                                         with_flip=with_flip,
-                                         optimizer_params=lbfgs_params_,
+                                        with_flip=with_flip,
+                                        optimizer_params=lbfgs_params_,
                                          **brs_opt_func_params)
 
         if isinstance(net, DistMapsHRNetModel):
@@ -64,10 +64,10 @@ def get_predictor(net, brs_mode, device,
             FeaturePredictor = FeatureBRSPredictor
 
         predictor = FeaturePredictor(net, device,
-                                     opt_functor=opt_functor,
-                                     with_flip=with_flip,
-                                     insertion_mode=insertion_mode,
-                                     zoom_in=zoom_in,
+                                    opt_functor=opt_functor,
+                                    with_flip=with_flip,
+                                    insertion_mode=insertion_mode,
+                                    zoom_in=zoom_in,
                                      **predictor_params_)
     elif brs_mode == 'RGB-BRS' or brs_mode == 'DistMap-BRS':
         use_dmaps = brs_mode == 'DistMap-BRS'
@@ -79,16 +79,16 @@ def get_predictor(net, brs_mode, device,
             predictor_params_.update(predictor_params)
 
         opt_functor = InputOptimizer(prob_thresh=prob_thresh,
-                                     with_flip=with_flip,
-                                     optimizer_params=lbfgs_params_,
+                                    with_flip=with_flip,
+                                    optimizer_params=lbfgs_params_,
                                      **brs_opt_func_params)
 
         predictor = InputBRSPredictor(net, device,
-                                      optimize_target='dmaps' if use_dmaps else 'rgb',
-                                      opt_functor=opt_functor,
-                                      with_flip=with_flip,
-                                      zoom_in=zoom_in,
-                                      **predictor_params_)
+                                    optimize_target='dmaps' if use_dmaps else 'rgb',
+                                    opt_functor=opt_functor,
+                                    with_flip=with_flip,
+                                    zoom_in=zoom_in,
+                                    **predictor_params_)
     else:
         raise NotImplementedError
 

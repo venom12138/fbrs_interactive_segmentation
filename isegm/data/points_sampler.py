@@ -57,7 +57,7 @@ class SinglePointSampler(BasePointSampler):
             return [(-1, -1)]
         else:
             num_indices = self._selected_indices.shape[0]
-            point = self._selected_indices[np.random.randint(0, num_indices)]
+            point = self._selected_indices[np.random.randint(0, max(2,num_indices))]
             return [point]
 
 

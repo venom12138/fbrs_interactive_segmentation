@@ -6,12 +6,13 @@ from scipy.ndimage import distance_transform_edt
 
 Click = namedtuple('Click', ['is_positive', 'coords'])
 
-
 class Clicker(object):
     def __init__(self, gt_mask=None, init_clicks=None, ignore_label=-1):
         if gt_mask is not None:
             self.gt_mask = gt_mask == 1
             self.not_ignore_mask = gt_mask != ignore_label
+            # print(f'self.not_ignore_mask:{self.not_ignore_mask}')
+            # print(f'self.gt_mask:{self.gt_mask}')
         else:
             self.gt_mask = None
 
@@ -35,7 +36,9 @@ class Clicker(object):
 
         if padding:
             fn_mask = np.pad(fn_mask, ((1, 1), (1, 1)), 'constant')
+            # print(f'before padding fp_mask:{fp_mask.shape}')
             fp_mask = np.pad(fp_mask, ((1, 1), (1, 1)), 'constant')
+            # print(f'after padding fp_mask:{fp_mask.shape}')
 
         fn_mask_dt = distance_transform_edt(fn_mask)
         fp_mask_dt = distance_transform_edt(fp_mask)

@@ -33,15 +33,17 @@ class BasePredictor(object):
             self.original_image = self.original_image.unsqueeze(0)
 
     def get_prediction(self, clicker):
-        clicks_list = clicker.get_clicks()
-
+        try:
+            clicks_list = clicker.get_clicks()
+        except:
+            clicks_list = clicker
         image_nd, clicks_lists, is_image_changed = self.apply_transforms(
             self.original_image, [clicks_list]
         )
 
         pred_logits = self._get_prediction(image_nd, clicks_lists, is_image_changed)
         prediction = F.interpolate(pred_logits, mode='bilinear', align_corners=True,
-                                   size=image_nd.size()[2:])
+                                size=image_nd.size()[2:])
 
         for t in reversed(self.transforms):
             prediction = t.inv_transform(prediction)

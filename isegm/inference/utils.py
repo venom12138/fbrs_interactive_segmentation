@@ -10,7 +10,7 @@ from isegm.data.berkeley import BerkeleyDataset
 from isegm.data.grabcut import GrabCutDataset
 from isegm.data.davis import DavisDataset
 from isegm.data.sbd import SBDEvaluationDataset
-
+from isegm.data.EPIC import EPIC_KitchenDataset
 
 def get_time_metrics(all_ious, elapsed_time):
     n_images = len(all_ious)
@@ -117,6 +117,8 @@ def get_dataset(dataset_name, cfg):
         dataset = SBDEvaluationDataset(cfg.SBD_PATH)
     elif dataset_name == 'SBD_Train':
         dataset = SBDEvaluationDataset(cfg.SBD_PATH, split='train')
+    elif dataset_name == 'EPIC-Kitchen':
+        dataset = EPIC_KitchenDataset(cfg.EPIC_KITCHEN_PATH)
     else:
         dataset = None
 
